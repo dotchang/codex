@@ -9,7 +9,6 @@ It loads various mesh formats via Trimesh and optionally supports STEP/IGES thro
 ```bash
 python cad_viewer.py <path_to_model> --material iron
 ```
-
 See `requirements.txt` for required dependencies.
 
 ## Example: render Stanford Bunny
