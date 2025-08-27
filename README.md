@@ -18,6 +18,12 @@ Alternatively, the pluggable viewer lets you pick a backend:
 python multi_viewer.py <path_to_model> --backend pyassimp  # or open3d
 ```
 
+You can also position a model in space for dataset generation:
+
+```bash
+python multi_viewer.py model.obj --translate 0 0 1 --rotate 0 45 0
+```
+
 See `requirements.txt` for required dependencies.
 
 ## Example: render Stanford Bunny
@@ -27,4 +33,10 @@ image using headless EGL-based rendering. You can choose a metal material preset
 
 ```bash
 python render_bunny.py --material aluminum  # outputs bunny.png
+```
+
+Specify translation and rotation to render from different poses:
+
+```bash
+python render_bunny.py --rotate 0 90 0 --translate 0 0.2 0
 ```
