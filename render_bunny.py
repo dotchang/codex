@@ -31,7 +31,6 @@ MATERIALS = {
     },
 }
 
-
 def download_bunny() -> str:
     if not os.path.exists(BUNNY_FILE):
         urllib.request.urlretrieve(BUNNY_URL, BUNNY_FILE)
