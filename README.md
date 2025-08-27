@@ -11,3 +11,12 @@ python cad_viewer.py <path_to_model>
 ```
 
 See `requirements.txt` for required dependencies.
+
+## Example: render Stanford Bunny
+
+`render_bunny.py` downloads the classic Stanford Bunny model and saves a rendered
+image using headless EGL-based rendering:
+
+```bash
+python render_bunny.py  # outputs bunny.png
+```

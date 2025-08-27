@@ -1,5 +1,8 @@
 open3d
 trimesh
 numpy
+pyrender
+imageio
+
 # Optional for STEP/IGES support
 OCP
