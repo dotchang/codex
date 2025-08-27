@@ -32,7 +32,6 @@ MATERIALS = {
     },
 }
 
-
 def download_bunny() -> str:
     if not os.path.exists(BUNNY_FILE):
         urllib.request.urlretrieve(BUNNY_URL, BUNNY_FILE)
@@ -71,6 +70,7 @@ def render_and_save(
         camera,
         pose=np.array([[1, 0, 0, 0], [0, 1, 0, -1], [0, 0, 1, 1.5], [0, 0, 0, 1]]),
     )
+
     renderer = pyrender.OffscreenRenderer(800, 600)
     color, _ = renderer.render(scene)
     iio.imwrite(out_path, color)
