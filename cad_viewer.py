@@ -1,10 +1,22 @@
 import sys
 import os
+import argparse
 import numpy as np
 
 # 依存関係
-import open3d as o3d
-import trimesh
+try:
+    import open3d as o3d
+except ModuleNotFoundError as exc:
+    raise ModuleNotFoundError(
+        "open3d is required for visualization. Install it with 'pip install open3d'."
+    ) from exc
+
+try:
+    import trimesh
+except ModuleNotFoundError as exc:
+    raise ModuleNotFoundError(
+        "trimesh is required for mesh processing. Install it with 'pip install trimesh'."
+    ) from exc
 
 # OCP (pythonocc) は任意
 try:
@@ -156,45 +168,48 @@ def load_step_iges_to_o3d(path: str) -> o3d.geometry.TriangleMesh:
         return _shape_to_o3d_mesh(shape)
 
 
-def setup_pbr_scene(mesh: o3d.geometry.TriangleMesh):
-    # マテリアル設定：既存テクスチャ/カラーがあれば利用
-    material = o3d.visualization.rendering.MaterialRecord()
-    # PBR（メタリック/ラフネス）
-    material.shader = "defaultLit"
+MATERIAL_PRESETS = {
+    "default": {"base_color": [0.7, 0.7, 0.72, 1.0], "metallic": 0.0, "roughness": 0.5},
+    "iron": {"base_color": [0.56, 0.57, 0.58, 1.0], "metallic": 1.0, "roughness": 0.5},
+    "aluminum": {"base_color": [0.91, 0.92, 0.93, 1.0], "metallic": 1.0, "roughness": 0.2},
+    "nickel": {"base_color": [0.66, 0.61, 0.53, 1.0], "metallic": 1.0, "roughness": 0.3},
+}
 
-    # 頂点カラーがある場合は自動適用。なければ灰色
+
+def setup_pbr_scene(mesh: o3d.geometry.TriangleMesh, material_name: str):
+    material = o3d.visualization.rendering.MaterialRecord()
+    material.shader = "defaultLit"
+    mat_cfg = MATERIAL_PRESETS.get(material_name, MATERIAL_PRESETS["default"])
+    material.base_color = mat_cfg["base_color"]
+    material.metallic = mat_cfg["metallic"]
+    material.roughness = mat_cfg["roughness"]
+
     if not mesh.has_vertex_colors() and not mesh.has_textures():
-        mesh.paint_uniform_color([0.7, 0.7, 0.72])
+        mesh.paint_uniform_color(mat_cfg["base_color"][:3])
 
     return material
 
 
-def visualize(mesh: o3d.geometry.TriangleMesh, title="CAD Viewer"):
+def visualize(mesh: o3d.geometry.TriangleMesh, title: str, material_name: str):
     mesh.compute_vertex_normals()
 
-    # ハイレベルGUI（O3DVisualizer）
     app = o3d.visualization.gui.Application.instance
     app.initialize()
 
     w = o3d.visualization.O3DVisualizer(title, 1280, 800)
     w.show_settings = True
 
-    mat = setup_pbr_scene(mesh)
+    mat = setup_pbr_scene(mesh, material_name)
     w.add_geometry("model", mesh, mat)
 
-    # 背景とライティング
     w.set_background((0.02, 0.02, 0.025, 1.0))
     w.scene.set_sun_light(
-        direction=[-1.0, -1.0, -1.0],  # 適度な斜め光
-        intensity=65000,               # 多少強め
+        direction=[-1.0, -1.0, -1.0],
+        intensity=65000,
         color=[1.0, 1.0, 1.0]
     )
     w.scene.enable_sun_light(True)
 
-    # IBL (環境マップ) は任意。HDR (.hdr/.exr) を用意できるなら設定可能
-    # 例: w.scene.scene.set_indirect_light("path/to/hdr.exr")
-
-    # トーンマッピング/SSAO/シャドウ
     w.scene.set_shadow_intensity(0.4)
     w.scene.enable_screen_space_reflections(True)
     w.scene.enable_indirect_light(True)
@@ -204,17 +219,23 @@ def visualize(mesh: o3d.geometry.TriangleMesh, title="CAD Viewer"):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python cad_viewer.py <path_to_model>")
+    parser = argparse.ArgumentParser(description="Open3D-based CAD viewer")
+    parser.add_argument("path", help="Path to the model file")
+    parser.add_argument(
+        "--material",
+        choices=MATERIAL_PRESETS.keys(),
+        default="default",
+        help="Material preset to apply",
+    )
+    args = parser.parse_args()
+
+    if not os.path.exists(args.path):
+        print(f"File not found: {args.path}")
         sys.exit(1)
 
-    path = sys.argv[1]
-    if not os.path.exists(path):
-        print(f"File not found: {path}")
-        sys.exit(1)
-
-    mesh = load_mesh_generic(path)
-    visualize(mesh, f"CAD Viewer - {os.path.basename(path)}")
+    mesh = load_mesh_generic(args.path)
+    title = f"CAD Viewer - {os.path.basename(args.path)}"
+    visualize(mesh, title, args.material)
 
 
 if __name__ == "__main__":

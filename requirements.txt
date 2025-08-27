@@ -1,0 +1,9 @@
+open3d
+trimesh
+numpy
+pyrender
+imageio
+# Backend switching
+pyassimp
+# Optional for STEP/IGES support
+OCP
