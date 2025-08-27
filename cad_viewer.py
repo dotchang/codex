@@ -3,8 +3,19 @@ import os
 import numpy as np
 
 # 依存関係
-import open3d as o3d
-import trimesh
+try:
+    import open3d as o3d
+except ModuleNotFoundError as exc:
+    raise ModuleNotFoundError(
+        "open3d is required for visualization. Install it with 'pip install open3d'."
+    ) from exc
+
+try:
+    import trimesh
+except ModuleNotFoundError as exc:
+    raise ModuleNotFoundError(
+        "trimesh is required for mesh processing. Install it with 'pip install trimesh'."
+    ) from exc
 
 # OCP (pythonocc) は任意
 try:
